@@ -1,0 +1,9 @@
+site_name: My Info Site
+site_author: jhall6550
+site_description: A public informational site built with MkDocs and GitHub Actions
+theme:
+  name: material
+
+nav:
+  - Home: index.md
+  - Interactive Python Demo: interactive.html
