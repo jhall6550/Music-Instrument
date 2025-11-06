@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Interactive Python Demo</title>
+    <style>
+      body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial; padding: 16px; }
+      textarea { width: 100%; height: 140px; font-family: monospace; margin-bottom: 8px; }
+      pre { background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+      button { padding: 8px 12px; font-size: 14px; }
+    </style>
+  </head>
+  <body>
+    <h1>Run Python in the Browser (Pyodide)</h1>
+    <p>Type some Python and press Run. This runs entirely in your browser using Pyodide — no server needed.</p>
+
+    <textarea id="pycode">print("Hello from Pyodide!")</textarea>
+    <br />
+    <button id="run">Run</button>
+    <h3>Output:</h3>
+    <pre id="output"></pre>
+
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
+    <script>
+      let pyodideReady = false;
+      let pyodide = null;
+      const outEl = document.getElementById('output');
+      async function loadPyodideAndPackages() {
+        outEl.textContent = 'Loading Python runtime... (this can take a few seconds)';
+        pyodide = await loadPyodide();
+        pyodideReady = true;
+        outEl.textContent = 'Pyodide is ready. Try running your code!';
+      }
+      loadPyodideAndPackages();
+
+      document.getElementById('run').onclick = async () => {
+        if (!pyodideReady) {
+          outEl.textContent = 'Pyodide is still loading, please wait...';
+          return;
+        }
+        const code = document.getElementById('pycode').value;
+        try {
+          let result = await pyodide.runPythonAsync(`
+import sys, io
+buf = io.StringIO()
+sys.stdout = buf
+sys.stderr = buf
+try:
+${code.split('\n').map(line => '    ' + line).join('\n')}
+except Exception as e:
+    import traceback
+    traceback.print_exc()
+sys.stdout.getvalue()
+`);
+          outEl.textContent = result;
+        } catch (err) {
+          outEl.textContent = String(err);
+        }
+      };
+    </script>
+  </body>
+</html>
